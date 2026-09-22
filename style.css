@@ -1,0 +1,281 @@
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    text-align: center;
+    background-color: rgb(120, 160, 192);
+    color: #FFF;
+    font-family: sans-serif;
+    overflow: hidden;
+}
+
+#kianBtn {
+    display: block;
+    margin: 0 auto;
+    align-self: center;
+    position: relative;
+
+    border: none;
+    background: none;
+    padding: 0;
+
+    /* fist cursor while hovering the button; hotspot (24 24) is roughly the
+       front knuckles, so clicks register right under the punch, not the
+       top-left corner of the image. Falls back to a normal pointer if the
+       image can't be found. */
+    cursor: url("../assets/images/punch-cursor.png") 24 24, pointer;
+
+    /* springy overshoot ease so the pop feels bouncy rather than mechanical */
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#kianBtn img {
+    width: 200px;
+    display: block;
+
+    /* filter (not opacity/background) is what's animated for the tier glow,
+       so it needs its own transition + a sensible idle value to blend from */
+    transition: filter 0.25s ease-out;
+    filter: drop-shadow(0 0 0 transparent);
+}
+
+/* base tier (nothing bought yet) keeps the original subtle warm glow on hover */
+#kianBtn:hover img {
+    filter: brightness(1.1) drop-shadow(0 0 16px rgba(255, 221, 120, 0.6));
+}
+
+#kianBtn:active {
+    transform: scale(0.92);
+}
+
+/* --- Kian Level tier outline/glow ---------------------------------------
+   Uses drop-shadow (not box-shadow/background) because drop-shadow follows
+   the actual alpha silhouette of the PNG, so the glow hugs Kian's outline
+   instead of filling a flat rectangle. Each tier gets its own colour-cycling
+   shimmer that's always-on at a gentle pace, and speeds up on hover/click
+   for a more energetic "powered up" feel. */
+
+#kianBtn.tier-silver img {
+    animation: silverShimmer 3.2s ease-in-out infinite;
+}
+
+#kianBtn.tier-gold img {
+    animation: goldShimmer 3.2s ease-in-out infinite;
+}
+
+#kianBtn.tier-silver:hover img,
+#kianBtn.tier-silver:active img {
+    animation: silverShimmer 1s ease-in-out infinite;
+}
+
+#kianBtn.tier-gold:hover img,
+#kianBtn.tier-gold:active img {
+    animation: goldShimmer 1s ease-in-out infinite;
+}
+
+@keyframes silverShimmer {
+    0%, 100% {
+        filter: brightness(1.05)
+                drop-shadow(0 0 6px #e8e8e8)
+                drop-shadow(0 0 14px #9c9c9c);
+    }
+    50% {
+        filter: brightness(1.2)
+                drop-shadow(0 0 10px #ffffff)
+                drop-shadow(0 0 24px #c9c9c9);
+    }
+}
+
+@keyframes goldShimmer {
+    0% {
+        filter: brightness(1.05) hue-rotate(0deg)
+                drop-shadow(0 0 6px #fcf6ba)
+                drop-shadow(0 0 16px #bf953f);
+    }
+    33% {
+        filter: brightness(1.2) hue-rotate(15deg)
+                drop-shadow(0 0 10px #fff6c8)
+                drop-shadow(0 0 22px #e8c25a);
+    }
+    66% {
+        filter: brightness(1.15) hue-rotate(-10deg)
+                drop-shadow(0 0 10px #ffe9a3)
+                drop-shadow(0 0 22px #aa771c);
+    }
+    100% {
+        filter: brightness(1.05) hue-rotate(0deg)
+                drop-shadow(0 0 6px #fcf6ba)
+                drop-shadow(0 0 16px #bf953f);
+    }
+}
+
+#sunburst {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200vmax;
+    height: 200vmax;
+    object-fit: cover;
+    z-index: 0;
+    animation:
+        spin 26s linear infinite,
+        sunGlow 3.5s ease-in-out infinite;
+}
+
+.counter {
+    z-index: 10;
+}
+
+.content {
+    position: relative;
+    z-index: 1;
+}
+
+#counter {
+    display: inline-block;
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#counter.bump {
+    transform: scale(1.18);
+}
+
+/* floating "+n" text that pops up and fades out above the button on each click */
+.gainPopup {
+    --drift: 0px;
+
+    position: absolute;
+    left: 50%;
+    top: -8px;
+    transform: translate(calc(-50% + var(--drift)), 0);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #fff5c4;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.55), 0 0 2px #000;
+    pointer-events: none;
+    z-index: 2;
+    white-space: nowrap;
+    animation: gainFloat 0.85s ease-out forwards;
+}
+
+@keyframes gainFloat {
+    0% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--drift)), 0) scale(0.6);
+    }
+    15% {
+        opacity: 1;
+        transform: translate(calc(-50% + var(--drift)), -14px) scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--drift)), -80px) scale(1);
+    }
+}
+
+.upgBtn {
+    width: 250px;
+    height: 50px;
+    background-image: linear-gradient(to bottom right, red, orange);
+    color: #FFF;
+    border-color: #FFF;
+    border-radius: 20px;
+    border-style: solid;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+
+    /* (the old rule here was "transition: transform 0.15 ease-in-out" -
+       missing the "s" on the duration makes the whole declaration invalid,
+       so :active never actually transitioned) */
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out, opacity 0.15s ease-out;
+}
+
+.upgBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.upgBtn:active:not(:disabled) {
+    transform: translateY(0) scale(0.96);
+    filter: brightness(0.95);
+}
+
+.upgBtn:disabled {
+    background-image: linear-gradient(to bottom right, #555, #777);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* brief pulse played right after an upgrade is successfully bought */
+@keyframes purchasePulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.65);
+    }
+    100% {
+        box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+    }
+}
+
+.upgBtn.purchased {
+    animation: purchasePulse 0.5s ease-out;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+.panel {
+    overflow: auto;
+    padding: 20px;
+}
+
+.left {
+    position: relative;
+    flex: 1;
+    background: #7894b1;
+    color: white;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.right {
+    flex: 0 0 300;
+    background: #012630;
+}
+
+.divider {
+    width: 6px;
+    background: #666;
+    cursor: col-resize;
+    transition: background 0.2s;
+}
+
+.divider:hover {
+    background: #999;
+}
+
+.clicked {
+    transform: scale(1.22) rotate(var(--rotation));
+}
+
+@keyframes spin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes sunGlow {
+    0%, 100% { filter: brightness(1) saturate(1); }
+    50% { filter: brightness(1.18) saturate(1.35); }
+}
